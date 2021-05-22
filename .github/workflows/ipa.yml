@@ -57,18 +57,31 @@ jobs:
       #  with:
       #    ngrok-token: ${{ secrets.NGROK_AUTH_TOKEN }}
       #    password: Aa123456
-      - name: "Upload package"
-        uses: NyaMisty/upload-artifact-as-is@nightly
-        with:
-          path: ${{ runner.temp }}\ipaDown\${{ env.appName }}.ipa
+      
+      #- name: "Upload package"
+      #  uses: NyaMisty/upload-artifact-as-is@nightly
+      #  with:
+      #    path: ${{ runner.temp }}\ipaDown\${{ env.appName }}.ipa
+      - name: Get current version
+        id: curver
+        run: echo "::set-output name=curver::$(cat curver.txt)"
+        shell: bash
       - name: Commit ver change
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git commit -m "Updating app to ver $(cat curver.txt)" -a
+          git commit -m "Updating app to ver ${{ steps.curver.outputs.curver }}" -a
         shell: bash
       - name: Push changes
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref }}
+      - name: Pushing to release
+        uses: ncipollo/release-action@v1
+        with:
+          name: "${{ env.appName }}-${{ steps.curver.outputs.curver }}"
+          commit: ${{ github.sha }}
+          tag: "${{ env.appName }}-${{ steps.curver.outputs.curver }}"
+          artifacts: ${{ runner.temp }}\ipaDown\${{ env.appName }}.ipa
+          token: ${{ secrets.GITHUB_TOKEN }}
