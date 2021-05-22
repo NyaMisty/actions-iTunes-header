@@ -123,7 +123,9 @@ def getIpaDownUrl(appUrl, storeFront):
     r = requests.post('https://p46-buy.itunes.apple.com/WebObjects/MZBuy.woa/wa/buyProduct', headers=retHdrs, data=payload)
     print(r, r.text)
     t = plistlib.loads(r.text.encode('utf-8'))
-    return t['songList'][0]['URL'], appId, appVer
+    sinf = t['songList'][0]['sinfs'][0]['sinf']
+    ipaUrl = t['songList'][0]['URL']
+    return ipaUrl, appId, appVer, sinf
 
 
 def download_file(url, filename):
@@ -145,12 +147,15 @@ def main(args):
     filename = args[2]
     
     #downUrl = getIpaDownUrl("https://apps.apple.com/jp/app/id1377018522", '143462-9,32')
-    downUrl, appId, appVer = getIpaDownUrl(url, store)
+    downUrl, appId, appVer, sinf = getIpaDownUrl(url, store)
     print("Got down url: %s" % (downUrl))
     
     download_file(downUrl, filename + ".ipa")
     with open('curver.txt', 'w') as f:
         f.write(appVer)
+    
+    with open(filename + '.sinf', 'wb') as f:
+        f.write(sinf)
 
 
 if __name__ == '__main__':

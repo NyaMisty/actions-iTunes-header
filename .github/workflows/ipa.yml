@@ -59,6 +59,7 @@ jobs:
             python3 workflow_helper\iTunesDownload\download_ipa.py ${{ env.appStore }} ${{ env.appUrl }} ${{ env.appName }}
             mkdir ${{ runner.temp }}\ipaDown
             move *.ipa ${{ runner.temp }}\ipaDown
+            move *.sinf ${{ runner.temp }}\ipaDown
       #- uses: NyaMisty/reverse-rdp-windows-github-actions@master
       #  if: ${{ always() }}
       #  with:
@@ -104,13 +105,14 @@ jobs:
           name: "${{ env.appName }}-${{ steps.curver.outputs.curver }}"
           commit: ${{ github.sha }}
           tag: "${{ env.appName }}-${{ steps.curver.outputs.curver }}"
-          artifacts: ${{ runner.temp }}\ipaDown\${{ env.appName }}.ipa.*
+          artifacts: ${{ runner.temp }}\ipaDown\${{ env.appName }}.ipa.*,${{ runner.temp }}\ipaDown\${{ env.appName }}.sinf
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Commit ver change
         if: ${{ steps.check.outputs.NEED_UPDATE == 1 }}
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
+          git add curver.txt
           git commit -m "Updating app to ver ${{ steps.curver.outputs.curver }}" -a
         shell: bash
       - name: Push changes
