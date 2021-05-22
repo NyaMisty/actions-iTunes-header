@@ -1,0 +1,58 @@
+# vim: expandtab tabstop=2 shiftwidth=2
+name: Download IPA
+
+env:
+  appUrl: "https://apps.apple.com/jp/app/id1377018522"
+  appStore: "jp"
+  appName: "allstars"
+  PYTHONIOENCODING: utf-8
+
+on: 
+  push:
+  schedule:
+    - cron: '30 * * * *'
+  workflow_dispatch:
+    inputs:
+      unk:
+  repository_dispatch:
+
+jobs:
+  ipa_update:
+    name: 'Update IPA'
+    runs-on: "windows-latest"
+    steps:
+      - name: Set up git repository
+        uses: actions/checkout@v2
+      - name: Pre check version
+        id: check
+        run: |
+            pip3 install wheel requests
+            echo ::set-output name=notNeedUpdate::0
+            python3 workflow_helper/iTunesDownload/precheck_version.py ${{ env.appStore }} ${{ env.appUrl }} || echo ::set-output name=notNeedUpdate::1
+            exit 0
+        
+      - name: Setup iTunes
+        if: ${{ steps.check.outputs.notNeedUpdate == 0 }}
+        run: workflow_helper\iTunesInstall\install_itunes.bat
+        
+      - name: Login iTunes
+        if: ${{ steps.check.outputs.notNeedUpdate == 0 }}
+        env:
+          APPLEID: ${{ secrets.APPLEID }}
+          APPLEID_PWD: ${{ secrets.APPLEID_PWD }}
+        run: |
+            pip3 install pywinauto
+            python3 workflow_helper/itunes_auto_login.py %APPLEID% %APPLEID_PWD%
+        shell: cmd
+      
+      - name: Download ipa
+        if: ${{ steps.check.outputs.notNeedUpdate == 0 }}
+        run: |
+            pip3 install frida
+            python3 workflow_helper\iTunesDownload\download_ipa.py ${{ env.appStore }} ${{ env.appUrl }} ${{ env.appName }}
+            move allstars.ipa ${{ runner.temp }}
+      #- uses: NyaMisty/reverse-rdp-windows-github-actions@master
+      #  if: ${{ always() }}
+      #  with:
+      #    ngrok-token: ${{ secrets.NGROK_AUTH_TOKEN }}
+      #    password: Aa123456
