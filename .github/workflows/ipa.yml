@@ -50,9 +50,15 @@ jobs:
         run: |
             pip3 install frida
             python3 workflow_helper\iTunesDownload\download_ipa.py ${{ env.appStore }} ${{ env.appUrl }} ${{ env.appName }}
-            move allstars.ipa ${{ runner.temp }}
+            mkdir ${{ runner.temp }}\ipaDown
+            move *.ipa ${{ runner.temp }}\ipaDown
       #- uses: NyaMisty/reverse-rdp-windows-github-actions@master
       #  if: ${{ always() }}
       #  with:
       #    ngrok-token: ${{ secrets.NGROK_AUTH_TOKEN }}
       #    password: Aa123456
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ipaDown
+          path: ${{ runner.temp }}\ipaDown\${{ env.appName }}.ipa
