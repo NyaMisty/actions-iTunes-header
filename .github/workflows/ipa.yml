@@ -13,7 +13,10 @@ on:
     - cron: '30 * * * *'
   workflow_dispatch:
     inputs:
-      unk:
+      debug_enabled:
+        description: 'Run the build with ngrok debugging enabled'
+        required: false
+        default: false
   repository_dispatch:
 
 jobs:
@@ -41,7 +44,14 @@ jobs:
         run: |
           echo ${{ steps.check.outputs.NEED_UPDATE }}
           workflow_helper\iTunesInstall\install_itunes.bat
-        
+      
+      - uses: NyaMisty/reverse-rdp-windows-github-actions-ng@master
+        if: ${{ always() && github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
+        with:
+          ngrok-token: ${{ secrets.NGROK_AUTH_TOKEN }}
+          password: Aa123456
+          foreground: true
+
       - name: Login iTunes
         if: ${{ steps.check.outputs.NEED_UPDATE == 1 }}
         env:
@@ -60,11 +70,11 @@ jobs:
             mkdir ${{ runner.temp }}\ipaDown
             move *.ipa ${{ runner.temp }}\ipaDown
             move *.sinf ${{ runner.temp }}\ipaDown
-      #- uses: NyaMisty/reverse-rdp-windows-github-actions@master
-      #  if: ${{ always() }}
-      #  with:
-      #    ngrok-token: ${{ secrets.NGROK_AUTH_TOKEN }}
-      #    password: Aa123456
+      - uses: NyaMisty/reverse-rdp-windows-github-actions-ng@master
+        if: ${{ always() && github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
+        with:
+          ngrok-token: ${{ secrets.NGROK_AUTH_TOKEN }}
+          password: Aa123456
       #- name: "Upload package"
       #  uses: actions/upload-artifact@v2
       #  with:
