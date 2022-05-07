@@ -1,0 +1,32 @@
+# vim: expandtab tabstop=2 shiftwidth=2
+name: Test iTunes Header Server
+
+env:
+  PYTHONIOENCODING: utf-8
+
+on: 
+  push:
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        description: 'Run the build with ngrok debugging enabled'
+        required: false
+        default: false
+  repository_dispatch:
+
+jobs:
+  header_server:
+    name: 'Update IPA'
+    runs-on: "windows-latest"
+    steps:
+      - name: Set up git repository
+        uses: actions/checkout@v2
+      - name: Setup iTunes
+        uses: NyaMisty/actions-iTunes-header@master
+        with:
+          apple_id: ${{ secrets.APPLEID }}
+          apple_id_pwd: ${{ secrets.APPLEID_PWD }}
+      
+      - name: Test iTunes Server
+        run: |
+            curl -vv 127.0.0.1:9000

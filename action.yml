@@ -1,0 +1,58 @@
+name: 'Get iTunes Headers & Kbsync'
+inputs:
+  apple_id:
+    required: true
+  apple_id_pwd:
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Check if initialized
+      id: check
+      run: |
+        if [[ "$(cat /c/.iTunesInitialized)" == "${{ inputs.ngrok-token }}" ]]; then
+          echo "::set-output name=`INIT::1"
+        else
+          echo "::set-output name=NEED_INIT::0"
+        fi
+      shell: bash
+    - name: Setup iTunes
+      if: ${{ steps.check.outputs.NEED_INIT == 1 }}
+      run: |
+        echo ${{ steps.check.outputs.NEED_INIT }}
+        workflow_helper\iTunesInstall\install_itunes.bat
+    
+    - name: Setup Python Dependencies
+      if: ${{ steps.check.outputs.NEED_INIT == 1 }}
+      run: |
+        pip3 install pywinauto frida
+
+    - uses: NyaMisty/reverse-rdp-windows-github-actions-ng@master
+      if: ${{ always() && github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
+      with:
+        ngrok-token: ${{ secrets.NGROK_AUTH_TOKEN }}
+        password: Aa123456
+        foreground: true
+
+    - name: Login iTunes
+      if: ${{ steps.check.outputs.NEED_INIT == 1 }}
+      env:
+        APPLEID: ${{ inputs.apple_id }}
+        APPLEID_PWD: ${{ inputs.apple_id_pwd }}
+      run: |
+          python3 workflow_helper/itunes_auto_login.py %APPLEID% %APPLEID_PWD%
+      shell: cmd
+    
+    - name: Finish Initialization
+      if: ${{ steps.check.outputs.NEED_INIT == 1 }}
+      env:
+        APPLEID: ${{ inputs.apple_id }}
+      run: |
+        echo "$APPLEID" > /c/.iTunesInitialized
+      shell: bash
+    
+    - name: Get Header By Frida
+      run: |
+          start python3 workflow_helper\iTunesDownload\get_header.py
+      shell: cmd
