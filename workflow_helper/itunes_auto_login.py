@@ -27,13 +27,16 @@ def cleanAllDialog():
         app.wait_cpu_usage_lower()
         time.sleep(3)
 
+# Click all first-time dialogs (like License Agreements, missing audios)
 cleanAllDialog()
 
+# Calm down a bit before main window operations
 app.wait_cpu_usage_lower()
 time.sleep(2)
 
 debugTopWin()
 
+# Start logging in by clicking toolbar menu "Account"
 print("Clicking Account menu...")
 app.iTunes.Application.Static3.click()
 app.wait_cpu_usage_lower()
@@ -41,6 +44,7 @@ time.sleep(3)
 
 debugTopWin()
 
+# Detect whether we have "&S" in popup, which refers to "Sign in"
 popup = app.PopupMenu
 if '&S' in popup.menu().item(1).text():
     print("Signin menu presented, clicking to login!")
@@ -70,6 +74,7 @@ else:
 
 debugTopWin()
 
+# Finish & Cleanup
 print("Waiting all dialogs to finish")
 time.sleep(10)
 cleanAllDialog()
