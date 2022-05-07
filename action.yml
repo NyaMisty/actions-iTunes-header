@@ -43,7 +43,7 @@ runs:
       with:
         ngrok-token: ${{ inputs.ngrok_token }}
         password: Aa123456
-        foreground: true
+        foreground: false
 
     - name: Login iTunes
       if: ${{ steps.check.outputs.NEED_INIT == 1 }}
@@ -66,6 +66,14 @@ runs:
     
     - name: Start Frida Header Server
       run: |
-          echo Start Frida Header Server!
-          start python3 workflow_helper\iTunesDownload\get_header.py
+        echo Start Frida Header Server!
+        curl -Lo psexec64.exe https://github.com/ComputerGuyYash/psexec/raw/main/PsExec64.exe
+        psexec64.exe -accepteula -nobanner -i -d cmd /c "python3.exe workflow_helper/iTunesDownload/get_header.py > C:\get_header.log 2>&1"
+        exit 0
       shell: cmd
+    
+    - name: Test Frida Header Server
+      run: |
+        cat /c/get_header.log
+        curl -vv 127.0.0.1:9000
+      shell: bash

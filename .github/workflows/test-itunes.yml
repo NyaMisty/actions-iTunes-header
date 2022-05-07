@@ -30,6 +30,7 @@ jobs:
         with:
           apple_id: ${{ secrets.APPLEID }}
           apple_id_pwd: ${{ secrets.APPLEID_PWD }}
+          ngrok_token: ${{ secrets.NGROK_AUTH_TOKEN }}
       
       # Enable tmate debugging of manually-triggered workflows if the input option was provided
       - name: Setup tmate session
