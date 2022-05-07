@@ -12,7 +12,7 @@ on:
         description: 'Run the build with iTunes ngrok-RDP debugging enabled'
         required: false
         default: false
-      tmate_debug_enabled:
+      test_debug_enabled:
         description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
         required: false
         default: false
@@ -33,12 +33,19 @@ jobs:
           ngrok_token: ${{ secrets.NGROK_AUTH_TOKEN }}
       
       # Enable tmate debugging of manually-triggered workflows if the input option was provided
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tmate_debug_enabled }}
-        env:
-          SECRETS_CONTEXT: ${{ toJson(secrets) }}
+      # - name: Setup tmate session
+      #   uses: mxschmitt/action-tmate@v3
+      #   if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.test_debug_enabled }}
+      #   env:
+      #     SECRETS_CONTEXT: ${{ toJson(secrets) }}
         
       - name: Test iTunes Server
         run: |
             curl -vv 127.0.0.1:9000
+      
+      - uses: NyaMisty/reverse-rdp-windows-github-actions-ng@master
+        if: ${{ always() && github.event_name == 'workflow_dispatch' && github.event.inputs.test_debug_enabled }}
+        with:
+          ngrok-token: ${{ secrets.NGROK_AUTH_TOKEN }}
+          password: Aa123456
+          foreground: false
