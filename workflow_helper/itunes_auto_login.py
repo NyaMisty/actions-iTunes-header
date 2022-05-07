@@ -61,7 +61,8 @@ if '&S' in popup.menu().item(1).text():
     debugTopWin()
     
     print("Setting login dialog edit texts")
-    dialog = app.iTunesDialog
+    dialog = app.top_window()
+    assert dialog.friendly_class_name() == 'Dialog'
     appleid_Edit = dialog.Edit1
     pass_Edit = dialog.Edit2
     appleid_Edit.set_edit_text(ACCOUNT)
