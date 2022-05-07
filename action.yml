@@ -4,6 +4,9 @@ inputs:
     required: true
   apple_id_pwd:
     required: true
+  ngrok_token:
+    description: "Token for RDP debugging"
+    required: false
 
 runs:
   using: "composite"
@@ -12,7 +15,7 @@ runs:
       id: check
       run: |
         if [[ "$(cat /c/.iTunesInitialized)" == "${{ inputs.ngrok-token }}" ]]; then
-          echo "::set-output name=`INIT::1"
+          echo "::set-output name=NEED_INIT::1"
         else
           echo "::set-output name=NEED_INIT::0"
         fi
@@ -22,16 +25,18 @@ runs:
       run: |
         echo ${{ steps.check.outputs.NEED_INIT }}
         workflow_helper\iTunesInstall\install_itunes.bat
+      shell: cmd
     
     - name: Setup Python Dependencies
       if: ${{ steps.check.outputs.NEED_INIT == 1 }}
       run: |
         pip3 install pywinauto frida
+      shell: cmd
 
     - uses: NyaMisty/reverse-rdp-windows-github-actions-ng@master
       if: ${{ always() && github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
       with:
-        ngrok-token: ${{ secrets.NGROK_AUTH_TOKEN }}
+        ngrok-token: ${{ inputs.ngrok_token }}
         password: Aa123456
         foreground: true
 
