@@ -36,6 +36,12 @@ time.sleep(2)
 
 debugTopWin()
 
+# Click main window's first-time question ("No thanks" button)
+app.iTunes.Button11.click_input()
+
+app.wait_cpu_usage_lower()
+time.sleep(2)
+
 # Start logging in by clicking toolbar menu "Account"
 print("Clicking Account menu...")
 app.iTunes.Application.Static3.click()
