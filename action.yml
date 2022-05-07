@@ -14,22 +14,27 @@ runs:
     - name: Check if initialized
       id: check
       run: |
+        echo "Checking if we need to initialize iTunes again"
         if [[ "$(cat /c/.iTunesInitialized)" == "${{ inputs.ngrok-token }}" ]]; then
+          echo "  Need to re-init iTunes"
           echo "::set-output name=NEED_INIT::1"
         else
+          echo "  Needn't to do anything"
           echo "::set-output name=NEED_INIT::0"
         fi
       shell: bash
     - name: Setup iTunes
       if: ${{ steps.check.outputs.NEED_INIT == 1 }}
       run: |
-        echo ${{ steps.check.outputs.NEED_INIT }}
+        echo Setup iTunes...
+        start /wait taskkill /f /im iTunes* python*
         workflow_helper\iTunesInstall\install_itunes.bat
       shell: cmd
     
     - name: Setup Python Dependencies
       if: ${{ steps.check.outputs.NEED_INIT == 1 }}
       run: |
+        echo Setup Python Dependencies...
         pip3 install pywinauto frida
       shell: cmd
 
@@ -46,6 +51,7 @@ runs:
         APPLEID: ${{ inputs.apple_id }}
         APPLEID_PWD: ${{ inputs.apple_id_pwd }}
       run: |
+          echo Login iTunes...
           python3 workflow_helper/itunes_auto_login.py %APPLEID% %APPLEID_PWD%
       shell: cmd
     
@@ -54,10 +60,12 @@ runs:
       env:
         APPLEID: ${{ inputs.apple_id }}
       run: |
+        echo "Finish Initialization..."
         echo "$APPLEID" > /c/.iTunesInitialized
       shell: bash
     
-    - name: Get Header By Frida
+    - name: Start Frida Header Server
       run: |
+          echo Start Frida Header Server!
           start python3 workflow_helper\iTunesDownload\get_header.py
       shell: cmd
