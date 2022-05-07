@@ -8,8 +8,12 @@ on:
   push:
   workflow_dispatch:
     inputs:
-      debug_enabled:
-        description: 'Run the build with ngrok debugging enabled'
+      itunes_debug_enabled:
+        description: 'Run the build with iTunes ngrok-RDP debugging enabled'
+        required: false
+        default: false
+      tmate_debug_enabled:
+        description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
         required: false
         default: false
   repository_dispatch:
@@ -27,6 +31,13 @@ jobs:
           apple_id: ${{ secrets.APPLEID }}
           apple_id_pwd: ${{ secrets.APPLEID_PWD }}
       
+      # Enable tmate debugging of manually-triggered workflows if the input option was provided
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tmate_debug_enabled }}
+        env:
+          SECRETS_CONTEXT: ${{ toJson(secrets) }}
+        
       - name: Test iTunes Server
         run: |
             curl -vv 127.0.0.1:9000

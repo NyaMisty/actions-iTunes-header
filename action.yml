@@ -39,7 +39,7 @@ runs:
       shell: cmd
 
     - uses: NyaMisty/reverse-rdp-windows-github-actions-ng@master
-      if: ${{ always() && github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
+      if: ${{ always() && github.event_name == 'workflow_dispatch' && github.event.inputs.itunes_debug_enabled }}
       with:
         ngrok-token: ${{ inputs.ngrok_token }}
         password: Aa123456
