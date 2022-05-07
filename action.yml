@@ -74,6 +74,9 @@ runs:
     
     - name: Test Frida Header Server
       run: |
+        sleep 5
+        ret=0
+        curl --fail-with-body -vv 127.0.0.1:9000 || ret=$?
         cat /c/get_header.log
-        curl -vv 127.0.0.1:9000
+        exit $ret
       shell: bash

@@ -1,3 +1,4 @@
+import subprocess
 import time
 from pywinauto.application import Application
 from win32con import *
@@ -8,51 +9,72 @@ PASSWORD = sys.argv[2]
 
 print("Launching iTunes...")
 
-app = Application().start(r"C:\Program Files\iTunes\iTunes.exe")
-app.wait_cpu_usage_lower()
-time.sleep(3)
+def initITunes():
+    subprocess.call('taskkill /f /im iTunes*', shell=True)
 
-def debugTopWin():
-    print("-- Cur top win: %s" % app.top_window().wait('exists'))
+    app = Application().start(r"C:\Program Files\iTunes\iTunes.exe")
+    app.wait_cpu_usage_lower()
+    time.sleep(8)
 
-def cleanAllDialog():
-    while True:
+    def debugTopWin():
         topwin = app.top_window().wait('exists')
-        if 'Dialog' in topwin.class_name():
-            print("    Closing dialog %s" % topwin.window_text())
-            app.top_window().Button0.click()
+        texts = []
+        texts += topwin.texts()
+        for c in topwin.iter_children():
+            texts += c.texts()
+        print("-- Cur top win: %s, texts: %s" % (topwin, texts))
+
+    def cleanAllDialog():
+        while True:
+            topwin = app.top_window().wait('exists')
+            if 'Dialog' in topwin.class_name():
+                print("    Closing dialog %s" % topwin.window_text())
+                app.top_window().Button0.click()
+            elif 'Tour' in topwin.window_text():
+                print("    Closing Window %s" % topwin.window_text())
+                topwin.close()
+            else:
+                break
+            
+            app.wait_cpu_usage_lower()
+            time.sleep(5)
+
+    # Click all first-time dialogs (like License Agreements, missing audios)
+    cleanAllDialog()
+
+    # Calm down a bit before main window operations
+    app.wait_cpu_usage_lower()
+    debugTopWin()
+
+    # Click main window's first-time question ("No thanks" button)
+    try:
+        buttonText = app.iTunes.Button11.wait('ready').window_text()
+        print('Button11 text is: %s' % buttonText)
+        if 'Search' not in buttonText:
+            print("Clicked 'No Thanks' Button!")
+            app.iTunes.Button11.click_input()
+            app.wait_cpu_usage_lower()
+            time.sleep(4)
         else:
-            break
-        
-        app.wait_cpu_usage_lower()
-        time.sleep(3)
+            raise Exception('stub')
+    except:
+        print("Not founding 'No Thanks' Button, passing on...")
 
-# Click all first-time dialogs (like License Agreements, missing audios)
-cleanAllDialog()
 
-# Calm down a bit before main window operations
-app.wait_cpu_usage_lower()
-time.sleep(5)
+    # Start logging in by clicking toolbar menu "Account"
+    print("Clicking Account menu...")
+    app.iTunes.Application.Static3.click()
+    app.wait_cpu_usage_lower()
+    time.sleep(3)
 
-debugTopWin()
+    debugTopWin()
 
-# Click main window's first-time question ("No thanks" button)
-app.iTunes.Button11.click_input()
-
-app.wait_cpu_usage_lower()
-time.sleep(4)
-
-# Start logging in by clicking toolbar menu "Account"
-print("Clicking Account menu...")
-app.iTunes.Application.Static3.click()
-app.wait_cpu_usage_lower()
-time.sleep(3)
-
-debugTopWin()
-
-# Detect whether we have "&S" in popup, which refers to "Sign in"
-popup = app.PopupMenu
-if '&S' in popup.menu().item(1).text():
+    # Detect whether we have "&S" in popup, which refers to "Sign in"
+    popup = app.PopupMenu
+    if '&S' not in popup.menu().item(1).text():
+        popup.close()
+        raise Exception("Already logged in!")
+    
     print("Signin menu presented, clicking to login!")
     # not log in
     popup.menu().item(1).click_input()
@@ -60,7 +82,7 @@ if '&S' in popup.menu().item(1).text():
     time.sleep(8)
     debugTopWin()
 
-    for i in range(60):
+    for i in range(15):
         dialog = app.top_window()
         dialogWrap = dialog.wait('ready')
         assert dialogWrap.friendly_class_name() == 'Dialog'
@@ -69,11 +91,12 @@ if '&S' in popup.menu().item(1).text():
             if dialogWrap.window_text() == 'iTunes' \
                 and dialog.Edit1.wait('ready').window_text() == 'Apple ID' \
                 and dialog.Edit2.wait('ready').window_text() == 'Password' \
-                and dialog.Button0.wait('exists').window_text() == '&Sign In':
+                and dialog.Button1.wait('exists').window_text() == '&Sign In':
                 break
         except Exception as e:
-            pass
-    
+            continue
+    else:
+        raise Exception("Failed to find login window in 15 iterations!")
     app.wait_cpu_usage_lower()
 
     print("Setting login dialog edit texts")
@@ -93,16 +116,41 @@ if '&S' in popup.menu().item(1).text():
     time.sleep(3)
     
     print("Clicking login button!")
-    loginButton = dialog.Button0
+    loginButton = dialog.Button1
     loginButton.wait('ready')
+    # click multiple times as pywinauto seems to have some bug
     loginButton.click()
-else:
-    print("Already logged in!")
-    popup.close()
+    time.sleep(0.5)
+    try:
+        loginButton.click()
+        time.sleep(0.5)
+        loginButton.click_input()
+    except:
+        pass
+    
 
-debugTopWin()
+    print("Waiting login result...")
+    time.sleep(10)
+    debugTopWin()
+    
+    if app.top_window().handle == dialogWrap.handle:
+        raise Exception("Failed to trigger Login button!")
+    elif app.top_window().window_text() == 'Verification Failed':
+        raise Exception("Verification Failed: %s" % app.top_window().Static2.window_text())
 
-# Finish & Cleanup
-print("Waiting all dialogs to finish")
-time.sleep(10)
-cleanAllDialog()
+
+    # Finish & Cleanup
+    print("Waiting all dialogs to finish")
+    cleanAllDialog()
+
+
+for init_i in range(3):
+    try:
+        initITunes()
+        break
+    except Exception as e:
+        print("Init iTunes %d: Failed with %s" % (init_i, e))
+        import traceback; traceback.print_exc()
+        time.sleep(8)
+
+print("Init iTunes Successfully!")
