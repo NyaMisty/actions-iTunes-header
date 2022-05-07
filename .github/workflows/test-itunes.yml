@@ -20,7 +20,7 @@ on:
 
 jobs:
   header_server:
-    name: 'Update IPA'
+    name: 'Test Setup'
     runs-on: "windows-latest"
     steps:
       - name: Set up git repository
