@@ -35,7 +35,7 @@ runs:
       if: ${{ steps.check.outputs.NEED_INIT == 1 }}
       run: |
         echo Setup Python Dependencies...
-        pip3 install pywinauto frida
+        pip3 install pywinauto frida Flask
       shell: cmd
 
     - uses: NyaMisty/reverse-rdp-windows-github-actions-ng@master
