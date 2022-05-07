@@ -98,7 +98,7 @@ def getHeader():
     hdrUrl = request.args.get('url', "https://p46-buy.itunes.apple.com/WebObjects/MZBuy.woa/wa/buyProduct")
     retHdrs = rpc.get_header(hdrUrl)
     eprint("Got Headers: %s" % retHdrs)
-    kbsync = bytes.fromhex(retHdrs.pop('kbsync'))
+    kbsync = retHdrs.pop('kbsync')
     guid = retHdrs.pop('X-Guid')
     return jsonify({
         "headers": retHdrs,
