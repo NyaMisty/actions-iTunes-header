@@ -40,16 +40,18 @@ function init() {
     
     var itunesBase = Process.enumerateModulesSync()[0].base
     var cfAllocator = itunesBase.add(0x22A8448).readPointer()
-    var GlobalContext = itunesBase.add(0x22A9B18).readPointer()
-    var otpGlobalContext = GlobalContext
-    if (!GlobalContext.isNull()) {
-        otpGlobalContext = GlobalContext.add(62716).readPointer()
-    }
     var kbsyncContext = itunesBase.add(0x22A6BBC).readU32()
     var prepareAppleHdrWrap = new NativeFunction(itunesBase.add(0x87FFC0), 'pointer',['pointer','pointer','pointer']);
     var get_cookie_val = new NativeFunction(itunesBase.add(0xBDE500), 'pointer',['pointer']);
     var get_kbsync = new NativeFunction(itunesBase.add(0x74D210), 'pointer',['uint32', 'uint32', 'pointer']);
+
     getHeader = function (url) {
+        var GlobalContext = itunesBase.add(0x22A9B18).readPointer()
+        var otpGlobalContext = GlobalContext
+        if (!GlobalContext.isNull()) {
+            otpGlobalContext = GlobalContext.add(62716).readPointer()
+        }
+        
         var otpContext = Memory.alloc(128)
         otpContext.writePointer(otpGlobalContext)
         otpContext.add(8).writeU64(0)
