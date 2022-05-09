@@ -9,3 +9,5 @@ start /wait msiexec.exe /i AppleApplicationSupport64.msi /qn
 @REM start /wait msiexec.exe /i AppleSoftwareUpdate.msi /qn
 @REM start /wait msiexec.exe /i Bonjour64.msi /qn
 start /wait msiexec.exe /i iTunes64.msi /qn
+
+python3 patch_itunes.py
