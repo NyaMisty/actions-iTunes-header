@@ -63,7 +63,8 @@ import base64
 
 ##### Frida Part
 
-session = frida.attach('iTunes.exe')
+procName = os.environ.get('ITUNES_PROCESS_NAME', 'iTunes.exe')
+session = frida.attach(procName)
 #session = frida.attach('iTunesFucked.exe')
 
 def eprint(*args, **kwargs):
