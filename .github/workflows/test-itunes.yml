@@ -43,9 +43,9 @@ jobs:
         run: |
             curl -vv 127.0.0.1:9000
       
-      - uses: NyaMisty/reverse-rdp-windows-github-actions-ng@master
-        if: ${{ always() && github.event_name == 'workflow_dispatch' && github.event.inputs.test_debug_enabled }}
-        with:
-          ngrok-token: ${{ secrets.NGROK_AUTH_TOKEN }}
-          password: Aa123456
-          foreground: false
+      #- uses: NyaMisty/reverse-rdp-windows-github-actions-ng@master
+      #  if: ${{ always() && github.event_name == 'workflow_dispatch' && github.event.inputs.test_debug_enabled }}
+      #  with:
+      #    ngrok-token: ${{ secrets.NGROK_AUTH_TOKEN }}
+      #    password: Aa123456
+      #    foreground: false

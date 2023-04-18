@@ -41,12 +41,12 @@ runs:
       working-directory: ${{ github.action_path }}
       shell: cmd
 
-    - uses: NyaMisty/reverse-rdp-windows-github-actions-ng@master
-      if: ${{ always() && github.event_name == 'workflow_dispatch' && github.event.inputs.itunes_debug_enabled }}
-      with:
-        ngrok-token: ${{ inputs.ngrok_token }}
-        password: Aa123456
-        foreground: false
+    #- uses: NyaMisty/reverse-rdp-windows-github-actions-ng@master
+    #  if: ${{ always() && github.event_name == 'workflow_dispatch' && github.event.inputs.itunes_debug_enabled }}
+    #  with:
+    #    ngrok-token: ${{ inputs.ngrok_token }}
+    #    password: Aa123456
+    #    foreground: false
 
     - name: Login iTunes
       if: ${{ steps.check.outputs.NEED_INIT == 1 }}
