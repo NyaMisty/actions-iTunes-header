@@ -98,7 +98,6 @@ app = Flask(__name__)
 def getHeader():
     hdrUrl = request.args.get('url', "https://p46-buy.itunes.apple.com/WebObjects/MZBuy.woa/wa/buyProduct")
     retHdrs = rpc.get_header(hdrUrl)
-    eprint("Got Headers: %s" % retHdrs)
     kbsync = retHdrs.pop('kbsync')
     guid = retHdrs.pop('X-Guid')
     return jsonify({
