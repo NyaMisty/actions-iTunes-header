@@ -37,7 +37,7 @@ runs:
       if: ${{ env.NEED_INIT == 1 }}
       run: |
         echo Setup Python Dependencies...
-        pip3 install pywinauto frida Flask
+        pip3 install pywinauto frida==16.4.10 Flask
       working-directory: ${{ github.action_path }}
       shell: cmd
 
